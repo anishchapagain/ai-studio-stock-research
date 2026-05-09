@@ -2,6 +2,18 @@
 
 This document outlines the engineering plan to transition the MVP Stock Research Assistant—an agentic AI application—into a highly robust, scalable, and secure production environment.
 
+## Engineering & Development Approach (Code-Level)
+- **Keys Setup:** `GEMINI_API_KEY` and `FINNHUB_API_KEY` must be configured locally via `.env`. Implement fail-fast validation on server boot if missing.
+- **API Validations:** Sanitize user inputs rigorously (e.g., uppercase, strip special chars) and validate both incoming frontend requests and outgoing external API responses.
+- **Type Safety:** Use strict TypeScript interfaces for all boundaries (Agent tool schemas, API responses, UI state).
+
+**Code-Level Logical Flow:**
+1. **Pre-flight:** Frontend validates configuration and sanitizes ticker symbol.
+2. **Agent Phase 1 (Tool Calling):** Frontend prompts Gemini to resolve stock details. Gemini pauses to invoke the `get_stock_price` tool.
+3. **Backend Execution:** Express server handles the tool call, hitting Finnhub (primary) or Yahoo Finance (fallback), handling rate limits and HTTP errors gracefully.
+4. **Agent Phase 2 (Grounding):** Frontend feeds the backend result to Gemini and triggers a Google Grounded Search for precisely 3 related news articles.
+5. **Rendering:** Gemini returns validated JSON. Frontend digests and renders to the UI components.
+
 ## Phase 1: Security & Architecture Hardening
 Before exposing agentic capabilities to production traffic, the foundation must be secured against abuse and failures.
 
